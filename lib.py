@@ -1,9 +1,5 @@
 class Rent(object):
     """
-    Rent class. Discounts is a list of all possible discounts to apply to final price.
-    That list is extendable with others types of discounts and each discount will
-    modify total price of rent.
-
     Attributes
     ----------
     rent_type : subclasses of BaseRentType
@@ -13,19 +9,13 @@ class Rent(object):
 
     Methods
     ----------
-    _set_total_price(): sets _total_price attribute
-    _apply_discounts(): applies all discounts from _discounts to _total_price
-    get_total_price(): set total price, apply discounts to it and return final price
-
+    get_total_price(): calculate and get total rent price
     """
     def __init__(self, rent_type, cuantity):
         self.rent_type = rent_type
         self.cuantity = cuantity
-        self._discounts = [FamilyDiscount, ]
-        self._total_price = 0
 
-    def _set_total_price(self):
-        """Calculates total price of rent and validate entry data"""
+    def _validate_input_data(self):
         # Validate cuantity data type
         if not isinstance(self.cuantity, int):
             raise TypeError("""Cuantity must be integer""")
@@ -34,19 +24,44 @@ class Rent(object):
         if not issubclass(self.rent_type, BaseRentType):
             raise TypeError("""Rent type must be subclass of BaseRentType""")
 
-        # calculate total price
-        self._total_price = self.cuantity * self.rent_type.price
+    def get_total_price(self):
+        """Calculate total price. Validate input"""
+        self._validate_input_data()
+        return float(self.rent_type.price * self.cuantity)
 
-    def _apply_discounts(self):
-        """Apply each discount to total price"""
-        for discount in self._discounts:
-            discount(self).apply()
+
+class FamilyRent(object):
+    """
+    Attributes
+    ----------
+    rentals : subclasses of Rent
+        rentals
+
+    Methods
+    ----------
+    get_total_price(): calculate and get total price of rentals with discount
+    """
+    def __init__(self, *rentals):
+        self.rentals = rentals
+
+    def _validate_input_data(self):
+        # Validate type
+        for rent in self.rentals:
+            if not isinstance(rent, Rent):
+                raise TypeError("""All rentals must be Rent instance""")
+        # Validate rentals count
+        if not 3 <= len(self.rentals) <= 5:
+            raise ValueError("""The amount of rentals should be from 3 to 5""")
 
     def get_total_price(self):
-        """Apply all discounts to total price and return it"""
-        self._set_total_price()
-        self._apply_discounts()
-        return self._total_price
+        """Get total price of rentals with discount"""
+        self._validate_input_data()
+
+        total_price = 0
+        for rent in self.rentals:
+            total_price += rent.get_total_price()
+
+        return float((total_price * 70) / 100)
 
 
 class BaseRentType(object):
@@ -69,38 +84,3 @@ class RentByDay(BaseRentType):
 class RentByWeek(BaseRentType):
     """Rent by week"""
     price = 60
-
-
-class BaseDiscount(object):
-    """
-    Base class for all discounts.
-    Apply method must be implemented for inherited classes
-
-    Methods
-    ----------
-    __init__(rent): must receive Rent instance
-    """
-    def __init__(self, rent):
-        # rent instance
-        self.rent = rent
-
-    def apply(self):
-        """Apply discount to total price of rent"""
-        raise NotImplementedError("""%s must be implemented""" % __name__)
-
-
-class FamilyDiscount(BaseDiscount):
-    """
-    Family discount. Applies if rent count is >= 3 and <= 5.
-    """
-    def __init__(self, rent):
-        super().__init__(rent)
-
-    def apply(self):
-        if not isinstance(self.rent, Rent):
-            raise TypeError("""Invalid Rent instance""")
-
-        # Discount condition
-        if 3 <= self.rent.cuantity <= 5:
-            self.rent._total_price = (self.rent._total_price * 70) / 100
-

@@ -11,11 +11,23 @@ El codigo esta documentado y cumple con los requisitos de PEP8.
 
 * Todas las clases se encuentran en *lib.py*
 
-* Se adjunta .coverage con reporte (para generarlo se uso el plugin Coverage.py)
+* Se adjunta reporte de coverage en HTML: ver directorio coverage_report. El reporte fue generado con plugin Coverage.py.
 
 ---
 
-La clase *Rent* es la que maneja las rentas. Recibe 2 paramentros posicionales en el constructor. El primero es tipo de renta. Puede ser cualquier clase de tipo de renta definido en *lib.py* u otro extendido de la clase *BaseRentType* (si el tipo de renta no es extendido de *BaseRentType*, se lanzara una excepcion de tipo *TypeError* al momento de llamar al metodo *get_total_price()*). El segundo parametro es la cantidad de rentas. La cantidad debe ser de tipo entero (se lanzara una excepcion de tipo *TypeError* en la llamada del metodo *get_total_price()* si el valor no es un entero). En la llamada del metodo *get_total_price()* se calculan tambien todos los descuentos seteados en atributo *_discounts*. Este atributo es un listado de descuentos a aplicar al precio total. En este caso hay un solo tipo de descuento *FamilyDiscount*. Es posible agregarle otros tipos de descuentos. Para esto hay que extender de la clase *BaseDiscount* e implementar el metodo *apply()* con sus condiciones para el descuento.   
+###Rent 
+Recibe 2 parametros posicionales en el constructor. 
+El primero es tipo de renta. Puede ser cualquier clase de tipo de renta definido en *lib.py* u otro extendido de la clase *BaseRentType*. 
+El segundo parametro es la cantidad de rentas. La cantidad debe ser de tipo entero. 
+En la llamada del metodo *get_total_price()* se calcula el precio total de la renta. El metodo retornara el precio total en *float*. 
+Puede lanzar excepcion *TypeError*, si tipo de renta o cantidad de rentas tienen tipos de datos invalidos.
+
+---
+###FamilyRent
+Debe recibir entre 3 a 5 objetos de tipo *Rent* en el constructor. 
+El metodo *get_total_price()* calculara los precios para todas las rentas y le aplicara un descuento de 30% al precio total. 
+Retorna el precio en *float*. Todos los parametros tienen que ser de tipo rent, sino el metodo lanzara excepcion de tipo *TypeError*. 
+La cantidad de rentas debe ser entre 3 y 5 inclusive, sino se lanzara excepcion de tipo *ValueError*.  
 
 ---
 
@@ -23,7 +35,4 @@ Tipos predefinidos de rentas son *RentByHour*, *RentByDay*, *RentByWeek*. Si qui
 
 ---
 
-Tipos predefinidos de descuentos son *FamilyDiscount*(30% sobre el total si la cantidad de rentas es entre 3 y 5). Si quieremos definir otro tipo de descuento, deberiamos extender la clase *BaseDiscount*. El constructor de la clase extendida de *BaseDiscount* deberia recibir la instacia de la clase *Rent*
-
----
 

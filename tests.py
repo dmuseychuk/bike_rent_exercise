@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from lib import Rent, RentByWeek, RentByHour, RentByDay, BaseRentType, FamilyDiscount
+from lib import Rent, RentByWeek, RentByHour, RentByDay, BaseRentType, FamilyRent
 
 
 class TestRent(TestCase):
@@ -29,27 +29,34 @@ class TestRent(TestCase):
         self.assertEqual(rent.get_total_price(), 0)
 
 
-class TestDiscount(TestCase):
-    """Test all discount classes"""
-    def test_family_discount(self):
-        # Apply only family discount to total price of rent
-        rent = Rent(RentByHour, 5)
-        rent._set_total_price()
-        FamilyDiscount(rent).apply()
-        self.assertEqual(rent._total_price, 17.5)
+class TestFamilyRent(TestCase):
+    """Test family rent class"""
+    def setUp(self):
+        # set initial data
+        self.rentals = [
+            Rent(RentByWeek, 1),
+            Rent(RentByHour, 1),
+            Rent(RentByDay, 1)
+        ]
 
-    def test_family_discount_type_exc(self):
-        # Apply only family discount to total price of rent
-        discount = FamilyDiscount(1)
-        self.assertRaises(TypeError, discount.apply)
+    def test_family_rent_price(self):
+        # Test valid rentals price
+        family_rent = FamilyRent(*self.rentals)
+        rentals_price = (sum([rent.rent_type.price for rent in self.rentals]) * 70) / 100
+        self.assertEqual(rentals_price, family_rent.get_total_price())
 
-    def test_family_discount_without_discount_condition(self):
-        # Apply only family discount to total price of rent,
-        # the result will be same as without discount
-        rent = Rent(RentByHour, 2)
-        rent._set_total_price()
-        FamilyDiscount(rent).apply()
-        self.assertEqual(rent._total_price, 10)
+    def test_rentals_type_exc(self):
+        # Validate throwed exception for rentals type
+        rentals_with_invalid_rental = self.rentals + ['invalid_rental']
+        family_rent = FamilyRent(*rentals_with_invalid_rental)
+        self.assertRaises(TypeError, family_rent.get_total_price)
+
+    def test_rentals_count_exc(self):
+        # Validate throwed exception for rentals count
+        family_rent_with_6_rents = FamilyRent(*(self.rentals * 2))
+        family_rent_with_0_rents = FamilyRent(*[])
+        self.assertRaises(ValueError, family_rent_with_6_rents.get_total_price)
+        self.assertRaises(ValueError, family_rent_with_0_rents.get_total_price)
 
 
 if __name__ == '__main__':
